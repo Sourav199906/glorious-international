@@ -1,0 +1,24 @@
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    volumes: [mongo_data:/data/db]
+  api:
+    build: ./server
+    restart: unless-stopped
+    env_file: ./server/.env
+    volumes: [private_passport_data:/app/private-data]
+    depends_on: [mongo]
+    ports: ["5000:5000"]
+  web:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    restart: unless-stopped
+    depends_on: [api]
+    ports: ["5173:80"]
+volumes:
+  mongo_data:
+  private_passport_data:
